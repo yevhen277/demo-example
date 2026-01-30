@@ -1,0 +1,115 @@
+import flet as ft
+from config import * 
+
+class FolderCard(ft.UserControl):
+    def __init__(self, folder_name, folder_path, tags=None, note="", time_str="", size_str="", on_edit_click=None):
+        super().__init__()
+        self.folder_name = folder_name
+        self.folder_path = folder_path
+        self.tags = tags if tags else [] 
+        self.note = note
+        self.time_str = time_str
+        self.size_str = size_str
+        self.on_edit_click = on_edit_click
+
+    def build(self):
+        # 1. 顶部：图标 + 文件夹名 + 日期 + 编辑按钮
+        header = ft.Row(
+            controls=[
+                ft.Text("📁", size=16), # Emoji 图标
+                ft.Text(self.folder_name, size=16, weight="bold", color=TEXT_PRIMARY, font_family=FONT_FAMILY),
+                ft.Container(expand=True),
+                ft.Text(f"   {self.time_str}", size=12, color=TEXT_SECONDARY, font_family=FONT_FAMILY),
+                # 编辑按钮
+                ft.IconButton(
+                    icon=ft.icons.EDIT,
+                    icon_color=TEXT_SECONDARY,
+                    icon_size=16,
+                    tooltip="编辑备注",
+                    on_click=self._handle_edit_click
+                ),
+            ],
+            vertical_alignment=ft.CrossAxisAlignment.CENTER
+        )
+
+        # 2. 第二行：路径 (你要在这个位置)
+        path_row = ft.Text(
+            value=f"📍 {self.folder_path}", 
+            size=12, 
+            color="#666666", 
+            font_family=FONT_FAMILY,
+            selectable=True # 允许复制路径
+        )
+
+        # 3. 中部：中文备注
+        note_text = self.note if self.note else "暂无备注"
+        content_row = ft.Text(
+            value=f"💬 {note_text}", # 加 Emoji
+            size=14,
+            color=TEXT_SECONDARY,
+            font_family=FONT_FAMILY,
+            max_lines=2,
+            overflow=ft.TextOverflow.ELLIPSIS,
+        )
+
+        # 4. 底部：标签 + 统计信息
+        # 标签
+        tag_views = []
+        for tag in self.tags:
+            tag_views.append(
+                ft.Container(
+                    content=ft.Text(f"# {tag}", size=10, color=TAG_TEXT, weight="bold", font_family=FONT_FAMILY),
+                    bgcolor=TAG_BG, 
+                    padding=ft.padding.symmetric(horizontal=6, vertical=2),
+                    border_radius=4, 
+                )
+            )
+        
+        # 统计信息 (放在最右边)
+        stats_text = ft.Text(f"   {self.size_str}", size=11, color=TEXT_SECONDARY, font_family=FONT_FAMILY)
+
+        footer = ft.Row(
+            controls=[
+                *tag_views, 
+                ft.Container(expand=True), # 占位，把统计信息顶到最右边
+                stats_text
+            ],
+            vertical_alignment=ft.CrossAxisAlignment.CENTER
+        )
+
+        # --- 组装 ---
+        card_content = ft.Column(
+            controls=[
+                header,
+                path_row,             # 路径移到了第二行
+                ft.Container(height=4),
+                content_row,
+                ft.Container(height=8),
+                footer
+            ],
+            spacing=2
+        )
+
+        return ft.Container(
+            content=card_content,
+            padding=15,
+            bgcolor=CARD_BG, 
+            border=ft.border.all(1, ACCENT_COLOR), 
+            border_radius=8,
+            on_hover=self.on_hover, 
+            animate=ft.animation.Animation(200, "easeOut"),
+        )
+
+    def on_hover(self, e):
+        e.control.bgcolor = HOVER_COLOR if e.data == "true" else CARD_BG
+        e.control.update()
+
+    def _handle_edit_click(self, e):
+        """处理编辑按钮点击，调用外部传入的回调"""
+        if self.on_edit_click:
+            self.on_edit_click({
+                "folder_path": self.folder_path,
+                "folder_name": self.folder_name,
+                "note": self.note,
+                "tags": self.tags
+            })
