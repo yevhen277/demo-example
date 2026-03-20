@@ -1,0 +1,86 @@
+{
+  "D:\\dingtalk": {
+    "note": "",
+    "tags": [],
+    "alias": "",
+    "hidden": false
+  },
+  "D:\\dist": {
+    "alias": "dist",
+    "note": "",
+    "tags": [],
+    "hidden": false
+  },
+  "E:\\Magicbox": {
+    "alias": "数图课程作业",
+    "note": "PySide6构建GUI\n包括直方图均衡化、Gamma校正、中值滤波、图像质量评价算法",
+    "tags": [
+      "课程作业",
+      "已提交"
+    ],
+    "hidden": false
+  },
+  "E:\\DIP": {
+    "alias": "",
+    "note": "",
+    "tags": [],
+    "hidden": false
+  },
+  "E:\\A_Very_Long_Project_Name_That_Might_Break_Your_UI_Layout_Test_v1.0": {
+    "alias": "A_Very_Long_Project_Name_That_Might_Break_Your_UI_Layout_Test_v1.0",
+    "note": "",
+    "tags": [],
+    "hidden": false
+  },
+  "__config__": {
+    "theme_color": "#3794FF",
+    "install_date": "2026-03-11"
+  },
+  "E:\\DSA_lab": {
+    "alias": "",
+    "note": "",
+    "tags": [],
+    "hidden": true
+  },
+  "E:\\DIP_Lab3_Haar": {
+    "alias": "数图实习3 Haar",
+    "note": "",
+    "tags": [
+      "课程作业"
+    ],
+    "hidden": false
+  },
+  "E:\\magicfinder": {
+    "alias": "",
+    "note": "",
+    "tags": [
+      "个人项目"
+    ],
+    "hidden": false
+  },
+  "E:\\magicfinder_v1": {
+    "alias": "",
+    "note": "",
+    "tags": [
+      "个人项目"
+    ],
+    "hidden": false
+  },
+  "E:\\GeekUninstaller": {
+    "alias": "Geek卸载器",
+    "note": "",
+    "tags": [
+      "工具"
+    ],
+    "hidden": false
+  },
+  "D:\\Magicbox": {
+    "alias": "数图课程作业",
+    "note": "数图课程作业，包括中值去噪高斯模糊等算法",
+    "tags": [
+      "课程作业",
+      "已提交"
+    ],
+    "hidden": false
+  }
+}
