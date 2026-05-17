@@ -1,6 +1,8 @@
 # General
 # 忽略操作系统、IDE、构建产物和常见语言的临时/二进制文件
 
+res/
+
 # OS
 .DS_Store
 Thumbs.db
