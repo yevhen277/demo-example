@@ -471,3 +471,64 @@ Accept: application/xml
 
 - 这里的接口协议是作业实现的基础版本，重点是让四个系统的职责清晰、流程完整、演示可控。
 - 后续如果进入编码阶段，可以在不改变业务含义的前提下，把这些接口进一步整理成正式的代码接口。
+
+## 11. 各系统需实现与调用的接口清单
+
+下面把每个系统**必须实现的对外/内部接口**与**需要调用的外部接口**列成清单，便于联调与分工。
+
+11.1 集成服务器（Integration Server）
+
+- 必须实现的对外接口：
+  - `GET /api/v1/shared-courses`：返回汇总后的共享课程（用于学院查询）。
+  - `POST /api/v1/enrollments`：接收学院发起的跨院选课请求，生成 `enrollmentId`，并触发写回流程。
+  - `POST /api/v1/enrollments/{enrollmentId}/withdraw`：接收学院发起的退选请求，触发退选写回流程。
+  - `GET /api/v1/stats/summary`：统计与汇总三院数据，供管理端查询。
+
+- 必要时实现的内部/管理接口（可选，但有助于运维与调试）：
+  - `GET /internal/v1/enrollments/{enrollmentId}`：查询选课记录状态。
+  - `GET /internal/v1/retry-queue`：查看待重试的写回任务。
+
+- 需调用的学院端接口：
+  - `POST http://{college-host}/internal/v1/enrollments/writeback`：把选课写回原课程所在学院（必需）。
+  - `POST http://{college-host}/internal/v1/enrollments/withdraw`：发起退选写回（必需）。
+  - 可选：`GET http://{college-host}/internal/v1/courses/{cid}` 与 `GET http://{college-host}/internal/v1/students/{sid}` 用于验证与补充数据。
+
+  11.2 学院系统（College A / B / C）——每个学院需实现的接口与调用关系
+
+- 学院系统对外（面向集成服务器与前端）需实现：
+  - 学院对内管理与展示接口（前端使用）：如 `GET /api/v1/courses`、`GET /api/v1/students/{sid}`、本院选课 `POST /api/v1/enrollments`（仅本院）等（按各院实现细化）。
+
+- 学院系统对集成服务器需实现的内部写回接口（必须实现）：
+  - `POST /internal/v1/enrollments/writeback`：接收集成服务器回写的选课信息，响应格式与本说明一致（`code/message/data`）。
+  - `POST /internal/v1/enrollments/withdraw`：接收集成服务器的退选写回请求。
+
+- 学院系统运行时会调用的外部接口：
+  - `GET http://{integration-host}/api/v1/shared-courses`：获取共享课程展示给学生。
+  - `POST http://{integration-host}/api/v1/enrollments`：当学生在本院发起跨院选课时调用（学院可以先在本院做登录与校验，再转发请求）。
+  - `POST http://{integration-host}/api/v1/enrollments/{enrollmentId}/withdraw`：发起跨院退选流程（如果学生从本院操作）。
+
+  11.3 前端 / 学院门户
+
+- 前端主要职责与调用：
+  - 向本院学院系统调用：登录 `POST /api/v1/auth/login`（若有）、查询课程 `GET /api/v1/courses`、发起选课/退选（本院接口）。
+  - 对跨院操作：前端通过本院后端将跨院选课请求转发到集成服务器（由本院后端负责调用 `POST /api/v1/enrollments`）。
+
+  11.4 支撑服务与运维接口（建议）
+
+- 为保证可观测性与可靠重试，建议实现或提供：
+  - 统一的鉴权/认证：集成服务器与学院内部接口间使用 API Key / 内网证书或 JWT，写入 `Authorization` header。
+  - 写回任务队列与重试接口：集成服务器维护写回失败的队列，并提供 `GET /internal/v1/retry-queue` 与管理端 `POST /internal/v1/retry/{taskId}`。
+  - 链路日志与审计：所有写回/退回操作记录 `requestId`，便于排查幂等与重试问题。
+
+  11.5 调用约定补充（安全与可用性）
+
+- 调用时应在 HTTP header 中携带：
+  - `Content-Type: application/xml`
+  - `Accept: application/xml`
+  - `Authorization: Bearer {token}` 或 `X-Internal-Key: {secret}`（内部调用推荐使用共享密钥或 mTLS）。
+
+- 重试策略：
+  - 对于对方不可用（HTTP 5xx 或 网络超时），采用指数退避重试（如 3 次），并把最终失败的写回任务入库等待人工/定时重试。
+  - 对于幂等错误（如重复选课 409），不重试。记录日志并上报。
+
+以上清单可以作为联调分工表的基础；若需要我可以把每个接口补充请求/响应的 XML 示例与 XSD 引用，并为各院生成一份对照实现清单（谁负责哪个接口、测试用例与 mock URL）。
