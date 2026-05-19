@@ -1,0 +1,177 @@
+import React, { useEffect, useState } from 'react'
+import { useNavigate, useParams, useLocation } from 'react-router-dom'
+import { fetchLocalCourses, fetchSharedCourses, postEnrollment, fetchMyEnrollments } from '../api'
+
+type Course = { id: string; name: string; time: number; score: number; teacher: string; location: string; collegeId?: string }
+type Enrollment = { enrollmentId: string; cid: string; name: string; status: string; sid: string }
+
+export default function Courses() {
+    const [tab, setTab] = useState<'local' | 'shared'>('local')
+    const [courses, setCourses] = useState<Course[]>([])
+    const [enrolledIds, setEnrolledIds] = useState<Set<string>>(new Set())
+    const [search, setSearch] = useState('')
+    const [message, setMessage] = useState('')
+    const navigate = useNavigate()
+    const { collegeId } = useParams()
+    const resolvedCollegeId = collegeId ? collegeId.toUpperCase() : 'A'
+
+    const location = useLocation()
+
+    const sid = sessionStorage.getItem('sid')
+    const isLoggedIn = !!sid
+
+    useEffect(() => {
+        loadCourses()
+    }, [tab, resolvedCollegeId])
+
+    // Initialize tab from query param ?tab=local|shared
+    useEffect(() => {
+        const q = new URLSearchParams(location.search).get('tab')
+        if (q === 'shared' || q === 'local') {
+            setTab(q)
+        }
+    }, [location.search])
+
+    useEffect(() => {
+        if (sid) {
+            fetchMyEnrollments(sid).then((data: Enrollment[]) => {
+                const active = data.filter((e: Enrollment) => e.status === 'ENROLLED')
+                setEnrolledIds(new Set(active.map((e: Enrollment) => e.cid)))
+            })
+        }
+    }, [sid, courses])
+
+    async function loadCourses() {
+        let data: { classes: Course[] }
+        if (tab === 'local') {
+            data = await fetchLocalCourses(resolvedCollegeId)
+        } else {
+            data = await fetchSharedCourses()
+        }
+        setCourses(data.classes || [])
+    }
+
+    function filteredCourses() {
+        if (!search) return courses
+        const q = search.toLowerCase()
+        return courses.filter(c =>
+            c.id.toLowerCase().includes(q) ||
+            c.name.toLowerCase().includes(q) ||
+            c.teacher.toLowerCase().includes(q)
+        )
+    }
+
+    async function enroll(cid: string) {
+        if (!isLoggedIn) {
+            setMessage('请先登录后再选课')
+            navigate(`/college/${resolvedCollegeId}/login`)
+            return
+        }
+        setMessage('提交中...')
+        const res: any = await postEnrollment(sid!, cid)
+        if (res.code === 0) {
+            setMessage(`选课成功：${res.data.enrollmentId}`)
+            setEnrolledIds(prev => new Set([...prev, cid]))
+        } else {
+            setMessage(`${res.code}: ${res.message}`)
+        }
+    }
+
+    return (
+        <div className="space-y-6">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                    <h2 className="text-2xl font-semibold text-white">课程列表</h2>
+                    <p className="text-sm text-slate-400">支持本院与跨院共享课程查询</p>
+                </div>
+                <div className="inline-flex rounded-full border border-white/10 bg-white/5 p-1">
+                    <button
+                        className={`rounded-full px-4 py-2 text-sm font-semibold transition ${tab === 'local' ? 'bg-white text-slate-900' : 'text-slate-300 hover:text-white'}`}
+                        onClick={() => setTab('local')}
+                    >
+                        本院课程
+                    </button>
+                    <button
+                        className={`rounded-full px-4 py-2 text-sm font-semibold transition ${tab === 'shared' ? 'bg-white text-slate-900' : 'text-slate-300 hover:text-white'}`}
+                        onClick={() => setTab('shared')}
+                    >
+                        共享课程
+                    </button>
+                </div>
+            </div>
+
+            {message && (
+                <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-200">
+                    {message}
+                </div>
+            )}
+
+            <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-slate-900/70 px-4 py-3">
+                <input
+                    type="text"
+                    placeholder="搜索课程号、名称或教师..."
+                    value={search}
+                    onChange={e => setSearch(e.target.value)}
+                    className="w-full bg-transparent text-sm text-slate-200 placeholder:text-slate-500 focus:outline-none"
+                />
+            </div>
+
+            <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/60">
+                <div className="overflow-x-auto">
+                    <table className="min-w-full text-sm">
+                        <thead className="bg-slate-900/80 text-left text-xs uppercase tracking-widest text-slate-500">
+                            <tr>
+                                <th className="px-4 py-3">课程号</th>
+                                <th className="px-4 py-3">名称</th>
+                                <th className="px-4 py-3">学时</th>
+                                <th className="px-4 py-3">学分</th>
+                                <th className="px-4 py-3">教师</th>
+                                <th className="px-4 py-3">地点</th>
+                                {tab === 'shared' && <th className="px-4 py-3">开课学院</th>}
+                                <th className="px-4 py-3">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-white/5">
+                            {filteredCourses().map(c => {
+                                const enrolled = enrolledIds.has(c.id)
+                                return (
+                                    <tr key={c.id} className="hover:bg-white/5">
+                                        <td className="px-4 py-3 font-mono text-xs text-slate-400">{c.id}</td>
+                                        <td className="px-4 py-3 text-white">
+                                            {enrolled && (
+                                                <span className="mr-2 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold uppercase text-emerald-300">
+                                                    已选
+                                                </span>
+                                            )}
+                                            {c.name}
+                                        </td>
+                                        <td className="px-4 py-3 text-slate-300">{c.time}</td>
+                                        <td className="px-4 py-3 text-slate-300">{c.score}</td>
+                                        <td className="px-4 py-3 text-slate-300">{c.teacher}</td>
+                                        <td className="px-4 py-3 text-slate-300">{c.location}</td>
+                                        {tab === 'shared' && <td className="px-4 py-3 text-slate-300">{c.collegeId || '-'}</td>}
+                                        <td className="px-4 py-3">
+                                            <button
+                                                onClick={() => enroll(c.id)}
+                                                disabled={enrolled}
+                                                className={`rounded-full px-4 py-2 text-xs font-semibold transition ${enrolled ? 'cursor-not-allowed bg-white/5 text-slate-500' : 'bg-white text-slate-900 hover:-translate-y-0.5 hover:bg-slate-100'}`}
+                                            >
+                                                {enrolled ? '已选' : '选课'}
+                                            </button>
+                                        </td>
+                                    </tr>
+                                )
+                            })}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {filteredCourses().length === 0 && (
+                <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-400">
+                    暂无课程
+                </div>
+            )}
+        </div>
+    )
+}
