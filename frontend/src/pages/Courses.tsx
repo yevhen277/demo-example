@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { fetchLocalCourses, fetchSharedCourses, postEnrollment, fetchMyEnrollments } from '../api'
+import { BookOpen, CheckCircle2, Globe2, Search } from 'lucide-react'
 
 type Course = { id: string; name: string; time: number; score: number; teacher: string; location: string; collegeId?: string }
 type Enrollment = { enrollmentId: string; cid: string; name: string; status: string; sid: string }
@@ -81,34 +82,39 @@ export default function Courses() {
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="surface rounded-xl p-6">
+                <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
-                    <h2 className="text-2xl font-semibold text-slate-950">课程列表</h2>
+                    <h2 className="text-2xl font-semibold tracking-tight text-slate-950">课程列表</h2>
                     <p className="text-sm text-slate-500">支持本院与跨院共享课程查询</p>
                 </div>
-                <div className="inline-flex rounded-md border border-slate-200 bg-slate-100 p-1">
+                <div className="inline-flex rounded-lg border border-slate-200 bg-slate-100 p-1">
                     <button
-                        className={`rounded px-4 py-2 text-sm font-semibold transition ${tab === 'local' ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-600 hover:text-slate-950'}`}
+                        className={`inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-semibold transition ${tab === 'local' ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-600 hover:text-slate-950'}`}
                         onClick={() => setTab('local')}
                     >
+                        <BookOpen className="h-4 w-4" />
                         本院课程
                     </button>
                     <button
-                        className={`rounded px-4 py-2 text-sm font-semibold transition ${tab === 'shared' ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-600 hover:text-slate-950'}`}
+                        className={`inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-semibold transition ${tab === 'shared' ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-600 hover:text-slate-950'}`}
                         onClick={() => setTab('shared')}
                     >
+                        <Globe2 className="h-4 w-4" />
                         共享课程
                     </button>
+                </div>
                 </div>
             </div>
 
             {message && (
-                <div className="rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900">
+                <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-medium text-blue-900">
                     {message}
                 </div>
             )}
 
-            <div className="flex items-center gap-3 rounded-md border border-slate-200 bg-white px-4 py-3 shadow-sm">
+            <div className="surface flex items-center gap-3 rounded-xl px-4 py-3">
+                <Search className="h-4 w-4 text-slate-400" />
                 <input
                     type="text"
                     placeholder="搜索课程号、名称或教师..."
@@ -118,10 +124,10 @@ export default function Courses() {
                 />
             </div>
 
-            <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+            <div className="surface overflow-hidden rounded-xl">
                 <div className="overflow-x-auto">
                     <table className="min-w-full text-sm">
-                        <thead className="bg-slate-50 text-left text-xs uppercase text-slate-500">
+                        <thead className="bg-slate-50/90 text-left text-xs uppercase text-slate-500">
                             <tr>
                                 <th className="px-4 py-3">课程号</th>
                                 <th className="px-4 py-3">名称</th>
@@ -137,11 +143,12 @@ export default function Courses() {
                             {filteredCourses().map(c => {
                                 const enrolled = enrolledIds.has(c.id)
                                 return (
-                                    <tr key={c.id} className="hover:bg-slate-50">
+                                    <tr key={c.id} className="transition hover:bg-slate-50">
                                         <td className="px-4 py-3 font-mono text-xs text-slate-500">{c.id}</td>
                                         <td className="px-4 py-3 font-medium text-slate-950">
                                             {enrolled && (
                                                 <span className="mr-2 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold uppercase text-emerald-300">
+                                                    <CheckCircle2 className="mr-1 inline h-3 w-3" />
                                                     已选
                                                 </span>
                                             )}
@@ -156,7 +163,8 @@ export default function Courses() {
                                             <button
                                                 onClick={() => enroll(c.id)}
                                                 disabled={enrolled}
-                                                className={`rounded-md px-4 py-2 text-xs font-semibold transition ${enrolled ? 'cursor-not-allowed bg-slate-100 text-slate-400' : 'bg-slate-950 text-white hover:-translate-y-0.5 hover:bg-slate-800'}`}
+                                                className={`rounded-lg px-4 py-2 text-xs font-semibold transition ${enrolled ? 'cursor-not-allowed bg-slate-100 text-slate-400' : 'text-white shadow-sm hover:-translate-y-0.5'}`}
+                                                style={enrolled ? undefined : { background: 'var(--theme)' }}
                                             >
                                                 {enrolled ? '已选' : '选课'}
                                             </button>
@@ -170,7 +178,7 @@ export default function Courses() {
             </div>
 
             {filteredCourses().length === 0 && (
-                <div className="rounded-md border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500">
+                <div className="surface rounded-xl px-4 py-5 text-center text-sm text-slate-500">
                     暂无课程
                 </div>
             )}

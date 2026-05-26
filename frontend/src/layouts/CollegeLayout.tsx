@@ -37,22 +37,22 @@ export default function CollegeLayout() {
     }, [resolvedId])
 
     return (
-        <div className="min-h-screen bg-[#f5f7fb] text-slate-900">
-            <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur">
-                <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-3">
+        <div className="app-shell min-h-screen text-slate-900">
+            <header className="sticky top-0 z-20 border-b border-slate-200/80 bg-white/85 backdrop-blur-xl">
+                <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-3">
                     <div className="flex items-center gap-3">
                         <div
-                            className="flex h-10 w-10 items-center justify-center rounded-lg text-white shadow-sm"
+                            className="flex h-10 w-10 items-center justify-center rounded-lg text-white shadow-sm ring-1 ring-black/5"
                             style={{ background: theme.color }}
                         >
                             <GraduationCap className="h-5 w-5" />
                         </div>
                         <div>
-                            <div className="text-base font-semibold text-slate-950">{theme.title}</div>
+                            <div className="text-base font-semibold leading-tight text-slate-950">{theme.title}</div>
                             <div className="text-xs text-slate-500">XML 异构教务集成门户</div>
                         </div>
                     </div>
-                    <nav className="flex items-center gap-1 text-sm">
+                    <nav className="flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-50/80 p-1 text-sm">
                         {[
                             [`/college/${resolvedId}`, '首页'],
                             [`/college/${resolvedId}/courses`, '课程'],
@@ -62,25 +62,25 @@ export default function CollegeLayout() {
                                 key={to}
                                 end={label === '首页'}
                                 className={({ isActive }) =>
-                                    `rounded-md px-3 py-2 font-medium transition ${isActive ? 'bg-slate-100 text-slate-950' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-950'}`
+                                    `rounded-md px-3 py-2 font-medium transition ${isActive ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-600 hover:bg-white/70 hover:text-slate-950'}`
                                 }
                                 to={to}
                             >
                                 {label}
                             </NavLink>
                         ))}
-                        <Link className="ml-2 inline-flex items-center gap-2 rounded-md border border-slate-200 px-3 py-2 font-medium text-slate-700 hover:bg-slate-50" to={`/college/${resolvedId}/login`}>
+                        <Link className="ml-1 inline-flex items-center gap-2 rounded-md px-3 py-2 font-medium text-slate-700 hover:bg-white hover:text-slate-950" to={`/college/${resolvedId}/login`}>
                             <LogIn className="h-4 w-4" />
                             {name ? '切换用户' : '登录'}
                         </Link>
                     </nav>
-                    <div className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700">
+                    <div className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm">
                         <UserRound className="h-4 w-4" />
                         {name ? name : '访客'}
                     </div>
                 </div>
             </header>
-            <main className="mx-auto w-full max-w-6xl px-6 pb-16 pt-8">
+            <main className="mx-auto w-full max-w-7xl px-6 pb-16 pt-8">
                 <Outlet />
             </main>
         </div>

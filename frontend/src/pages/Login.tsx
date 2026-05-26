@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { loginWithPassword } from '../api'
+import { Eye, EyeOff, Lock, UserRound } from 'lucide-react'
 
 export default function Login() {
     const [sid, setSid] = useState('')
@@ -26,47 +27,54 @@ export default function Login() {
     }
 
     return (
-        <div className="mx-auto max-w-md rounded-lg border border-slate-200 bg-white p-8 shadow-sm">
-            <div className="mb-6">
-                <h2 className="text-2xl font-semibold text-slate-950">账户登录</h2>
+        <div className="surface mx-auto max-w-md rounded-xl p-8">
+            <div className="mb-7">
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-slate-950 text-white">
+                    <Lock className="h-5 w-5" />
+                </div>
+                <h2 className="text-2xl font-semibold tracking-tight text-slate-950">账户登录</h2>
                 <p className="text-sm text-slate-500">请输入学号与密码进入选课系统</p>
             </div>
             <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
                     <label className="text-xs font-semibold text-slate-600">学号 / 账号</label>
-                    <input
-                        value={sid}
-                        onChange={e => setSid(e.target.value)}
-                        className="w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-300"
-                    />
+                    <div className="relative">
+                        <UserRound className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                        <input
+                            value={sid}
+                            onChange={e => setSid(e.target.value)}
+                            className="focus-ring w-full rounded-lg border border-slate-200 bg-white px-10 py-3 text-sm text-slate-900"
+                        />
+                    </div>
                 </div>
                 <div className="space-y-2">
                     <label className="text-xs font-semibold text-slate-600">密码</label>
                     <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                         <input
                             type={showPassword ? 'text' : 'password'}
                             value={password}
                             onChange={e => setPassword(e.target.value)}
-                            className="w-full rounded-md border border-slate-200 bg-white px-4 py-3 pr-16 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-300"
+                            className="focus-ring w-full rounded-lg border border-slate-200 bg-white px-10 py-3 pr-12 text-sm text-slate-900"
                         />
                         <button
                             type="button"
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-500 hover:text-slate-900"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-900"
                             onClick={() => setShowPassword(prev => !prev)}
                             aria-label={showPassword ? '隐藏密码' : '显示密码'}
                         >
-                            {showPassword ? '隐藏' : '显示'}
+                            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                         </button>
                     </div>
                 </div>
                 {error && (
-                    <div className="rounded-md border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+                    <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
                         {error}
                     </div>
                 )}
                 <button
                     type="submit"
-                    className="w-full rounded-md bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-slate-800"
+                    className="w-full rounded-lg bg-slate-950 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-800"
                 >
                     登录
                 </button>

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { fetchMyEnrollments, withdrawEnrollment } from '../api'
+import { ClipboardList, LogIn, Trash2 } from 'lucide-react'
 
 export default function MyEnrollments() {
     const [list, setList] = useState<any[]>([])
@@ -25,22 +26,29 @@ export default function MyEnrollments() {
 
     return (
         <div className="space-y-6">
-            <div>
-                <h2 className="text-2xl font-semibold text-slate-950">我的选课</h2>
+            <div className="surface flex flex-wrap items-center justify-between gap-4 rounded-xl p-6">
+                <div>
+                <h2 className="text-2xl font-semibold tracking-tight text-slate-950">我的选课</h2>
                 <p className="text-sm text-slate-500">查看已选课程与退选状态</p>
+                </div>
+                <div className="inline-flex items-center gap-2 rounded-lg bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-600">
+                    <ClipboardList className="h-4 w-4" />
+                    {sid ? `${list.length} 条记录` : '访客模式'}
+                </div>
             </div>
             {!sid && (
-                <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                    <LogIn className="mr-2 inline h-4 w-4" />
                     当前为游客模式，无法查看我的选课，请先 <Link className="font-semibold underline" to={`/college/${resolvedCollegeId}/login`}>登录</Link>。
                 </div>
             )}
             {msg && (
-                <div className="rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900">
+                <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-medium text-blue-900">
                     {msg}
                 </div>
             )}
-            {sid && (
-                <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+            {sid && list.length > 0 && (
+                <div className="surface overflow-hidden rounded-xl">
                     <div className="overflow-x-auto">
                         <table className="min-w-full text-sm">
                             <thead className="bg-slate-50 text-left text-xs uppercase text-slate-500">
@@ -54,7 +62,7 @@ export default function MyEnrollments() {
                             </thead>
                             <tbody className="divide-y divide-slate-100">
                                 {list.map(i => (
-                                    <tr key={i.enrollmentId} className="hover:bg-slate-50">
+                                    <tr key={i.enrollmentId} className="transition hover:bg-slate-50">
                                         <td className="px-4 py-3 font-mono text-xs text-slate-500">{i.enrollmentId}</td>
                                         <td className="px-4 py-3 text-slate-600">{i.cid}</td>
                                         <td className="px-4 py-3 font-medium text-slate-950">{i.name}</td>
@@ -66,8 +74,9 @@ export default function MyEnrollments() {
                                         <td className="px-4 py-3">
                                             <button
                                                 onClick={() => withdraw(i)}
-                                                className="rounded-md border border-rose-200 px-4 py-2 text-xs font-semibold text-rose-700 transition hover:bg-rose-50"
+                                                className="inline-flex items-center gap-2 rounded-lg border border-rose-200 px-4 py-2 text-xs font-semibold text-rose-700 transition hover:bg-rose-50"
                                             >
+                                                <Trash2 className="h-3.5 w-3.5" />
                                                 退选
                                             </button>
                                         </td>
@@ -76,6 +85,11 @@ export default function MyEnrollments() {
                             </tbody>
                         </table>
                     </div>
+                </div>
+            )}
+            {sid && list.length === 0 && (
+                <div className="surface rounded-xl px-4 py-8 text-center text-sm text-slate-500">
+                    暂无选课记录，可以先去课程列表选一门课。
                 </div>
             )}
         </div>
