@@ -53,6 +53,23 @@ def main(page: ft.Page):
     
     page.add(layout)
 
-if __name__ == "__main__":
+def is_web_demo_mode():
+    return os.getenv("UNIFOLDER_DEMO_WEB", "").lower() in ("1", "true", "yes", "on")
+
+
+def run_app():
+    if is_web_demo_mode():
+        port = os.getenv("PORT") or os.getenv("FLET_SERVER_PORT") or "8550"
+        os.environ.setdefault("FLET_FORCE_WEB_SERVER", "true")
+        os.environ.setdefault("FLET_SERVER_IP", "0.0.0.0")
+        os.environ.setdefault("FLET_SERVER_PORT", port)
+        print(f"Starting UniFolder web demo on 0.0.0.0:{port}")
+        ft.app(target=main, assets_dir="assets", view=ft.AppView.WEB_BROWSER)
+        return
+
     # 确保 assets 文件夹里有 logo.png
     ft.app(target=main, assets_dir="assets")
+
+
+if __name__ == "__main__":
+    run_app()

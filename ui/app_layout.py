@@ -365,11 +365,12 @@ def get_main_layout(page: ft.Page):
         refresh_tags_list()
         show_all_btn.update()
 
-    def refresh_tags_list():
+    def refresh_tags_list(refresh_ui=True):
         """刷新标签列表"""
         tags_list_column.controls.clear()
         tags_list_column.controls.extend(build_tags_list())
-        tags_list_column.update()
+        if refresh_ui:
+            tags_list_column.update()
 
     tags_list_column = ft.Column(
         controls=build_tags_list(),
@@ -499,7 +500,7 @@ def get_main_layout(page: ft.Page):
         note = card_data["note"]
         update_detail_panel(folder_path, folder_name, alias, tags, note)
 
-    def load_folder_list(root_path):
+    def load_folder_list(root_path, refresh_ui=True):
         """加载文件夹列表"""
         if not root_path:
             return
@@ -508,13 +509,15 @@ def get_main_layout(page: ft.Page):
         current_filter_tag["value"] = None
         show_all_btn.visible = False
         current_path_display.value = root_path
-        current_path_display.update()
-        show_all_btn.update()
-        refresh_tags_list()
+        if refresh_ui:
+            current_path_display.update()
+            show_all_btn.update()
+        refresh_tags_list(refresh_ui=refresh_ui)
         
         cards_list_view.controls.clear()
         cards_list_view.controls.append(ft.Text("正在扫描...", color=TEXT_SECONDARY, font_family=FONT_FAMILY))
-        cards_list_view.update()
+        if refresh_ui:
+            cards_list_view.update()
 
         folders = FileScanner.get_subfolders(root_path)
         cards_list_view.controls.clear()
@@ -546,7 +549,8 @@ def get_main_layout(page: ft.Page):
             if visible_count == 0:
                 cards_list_view.controls.append(ft.Text("所有文件夹已隐藏", color=TEXT_SECONDARY, font_family=FONT_FAMILY))
 
-        cards_list_view.update()
+        if refresh_ui:
+            cards_list_view.update()
 
     # === 5. 文件选择器 ===
     file_picker = ft.FilePicker(
@@ -907,6 +911,10 @@ def get_main_layout(page: ft.Page):
     )
 
     update_stats(refresh_ui=False)
+
+    demo_root = os.getenv("UNIFOLDER_DEMO_ROOT")
+    if demo_root and os.path.isdir(demo_root):
+        load_folder_list(demo_root, refresh_ui=False)
 
     return ft.Row(
         controls=[sidebar, middle_column, detail_panel],
