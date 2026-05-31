@@ -1,0 +1,12 @@
+.git
+.pytest_cache
+__pycache__
+*.pyc
+logs
+tmp
+frontend/node_modules
+frontend/dist
+college_a/.env
+college_b/.env
+college_c/.env
+.env

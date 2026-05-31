@@ -1,0 +1,69 @@
+services:
+  college-a:
+    build:
+      context: .
+      dockerfile: Dockerfile.demo-api
+    environment:
+      COLLEGE_A_STORAGE: mock
+      COLLEGE_ID: A
+      APP_PORT: "8000"
+      INTEGRATION_HOST: http://integration-server:8081
+    command: python -m uvicorn college_a.app.main:create_app --factory --host 0.0.0.0 --port 8000
+    expose:
+      - "8000"
+
+  college-b:
+    build:
+      context: .
+      dockerfile: Dockerfile.demo-api
+    environment:
+      COLLEGE_B_STORAGE: mock
+      COLLEGE_B_ID: B
+      APP_PORT: "8001"
+      INTEGRATION_HOST: http://integration-server:8081
+    command: python -m uvicorn college_b.app.main:create_app --factory --host 0.0.0.0 --port 8001
+    expose:
+      - "8001"
+
+  college-c:
+    build:
+      context: .
+      dockerfile: Dockerfile.demo-api
+    environment:
+      COLLEGE_C_STORAGE: mock
+      COLLEGE_C_ID: C
+      COLLEGE_C_PORT: "8002"
+      INTEGRATION_HOST: http://integration-server:8081
+    command: python -m uvicorn college_c.app.main:create_app --factory --host 0.0.0.0 --port 8002
+    expose:
+      - "8002"
+
+  integration-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.demo-api
+    environment:
+      DB_PATH: /tmp/integration_server_demo.db
+      COLLEGE_A_URL: http://college-a:8000
+      COLLEGE_B_URL: http://college-b:8001
+      COLLEGE_C_URL: http://college-c:8002
+      API_KEY: integration-server-api-key-2026
+    command: python -m uvicorn integration_server.app:create_app --factory --host 0.0.0.0 --port 8081
+    depends_on:
+      - college-a
+      - college-b
+      - college-c
+    expose:
+      - "8081"
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.demo-web
+    depends_on:
+      - college-a
+      - college-b
+      - college-c
+      - integration-server
+    expose:
+      - "80"
